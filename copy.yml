@@ -1,0 +1,46 @@
+---
+- name: Copy files
+  hosts: RedHat
+  become: yes
+  
+  vars:
+    src_file: /home/vm/ansible/html
+    dest_file: /var/www/  
+
+  tasks:
+  - name: Install httpd
+    yum:
+      name: httpd
+      state: installed
+######################
+  - name: Copy folder html
+    copy:
+      src={{src_file }} 
+      dest={{ dest_file }}
+      mode=0555
+    notify: Restart httpd
+########################
+  - name: Start httpd
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+#######################
+  - name: Allow http service thorugh firewall
+    ansible.posix.firewalld:
+      port: 80/tcp
+      permanent: true
+      state: enabled
+    notify: Restart firewalld
+  - name: Restart firewalld
+    service:
+      name: firewalld
+      state: restarted
+########################
+ 
+  handlers:
+  - name: Restart httpd
+    service:
+      name: httpd
+      state: restarted
+      enabled: yes

@@ -1,0 +1,30 @@
+---
+- name: Allow net port through firewall
+  hosts: RedHat
+  become: yes
+
+  tasks:
+  - name: allow ssh
+    ansible.posix.firewalld:
+      port: 22/tcp
+      permanent: true
+      state: enabled
+      zone: public 
+  - name: allow 80/tcp port
+    ansible.posix.firewalld:
+      port: 80/tcp
+      permanent: true
+      state: enabled
+      zone: public
+  - name: allow 443/tcp
+    ansible.posix.firewalld:
+      port: 443/tcp
+      permanent: true
+      state: enabled
+      zone: public
+
+
+  - name: reload Firewalld rules
+    service:
+      name: firewalld
+      state: reloaded

@@ -1,0 +1,10 @@
+---
+- name: Service
+  hosts: RedHat
+  become: yes
+  
+  tasks: 
+  - name: restart
+    service: 
+      name: httpd
+      state: restarted
