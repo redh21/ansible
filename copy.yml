@@ -44,3 +44,8 @@
       name: httpd
       state: restarted
       enabled: yes
+  - name: Restart firewalld
+    service:
+      name: firewalld
+      state: reloaded
+

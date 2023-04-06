@@ -1,0 +1,35 @@
+---
+- name: Remove files
+  hosts: RedHat
+  become: yes
+  
+  vars:
+    dest_folder: /var/www/html  
+
+  tasks:
+  - name: Remove httpd
+    yum:
+      name: httpd
+      state: absent
+###########################
+  - name: Remove folder html
+    file:
+      path={{dest_folder}}
+      state=absent
+###########################
+  - name: Deny 80 port
+    ansible.posix.firewalld:
+      port: 80/tcp
+      state: disabled
+      permanent: yes
+    notify: Restart firewalld
+##########################
+
+
+
+  
+  handlers:
+  - name: Restart firewalld
+    service:
+      name: firewalld
+      state: reloaded    
