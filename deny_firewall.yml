@@ -1,11 +1,11 @@
 ---
-- name: Allow net port through firewall
+- name: Deny net port through firewall
   hosts: RedHat
   become: yes
 
   tasks:
 #########FIREWALLD################
-  - name: Allow 80/tcp port
+  - name: Deny 80/tcp port
     ansible.posix.firewalld:
       port: 80/tcp
       permanent: true
@@ -13,7 +13,7 @@
       zone: public
     notify: Reload Firewalld  
 ############UFW####################  
-  - name: Allow 80/tcp port
+  - name: Deny 80/tcp port
     community.general.ufw:
       rule: deny
       port: 80
