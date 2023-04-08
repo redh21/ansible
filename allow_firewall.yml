@@ -4,27 +4,28 @@
   become: yes
 
   tasks:
-  - name: allow ssh
-    ansible.posix.firewalld:
-      port: 22/tcp
-      permanent: true
-      state: enabled
-      zone: public 
-  - name: allow 80/tcp port
+#########FIREWALLD################
+  - name: Allow 80/tcp port
     ansible.posix.firewalld:
       port: 80/tcp
       permanent: true
       state: enabled
       zone: public
-  - name: allow 443/tcp
-    ansible.posix.firewalld:
-      port: 443/tcp
-      permanent: true
-      state: enabled
-      zone: public
-
-
-  - name: reload Firewalld rules
+    notify: Reload Firewalld  
+############UFW####################  
+  - name: Allow 80/tcp port
+    community.general.ufw:
+      rule: allow
+      port: 80
+      proto: tcp
+    notify: Reload ufw
+##################################
+  handlers:
+  - name: Reload Firewalld
     service:
       name: firewalld
+      state: reloaded
+  - name: Reload ufw
+    service:
+      name: ufw
       state: reloaded

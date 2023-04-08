@@ -1,23 +1,30 @@
 ---
-- name: Deny net port through firewall
+- name: Allow net port through firewall
   hosts: RedHat
   become: yes
 
   tasks:
-  - name: deny ssh
+#########FIREWALLD################
+  - name: Allow 80/tcp port
     ansible.posix.firewalld:
-      service: http
-      permanent: true
-      state: disabled
-      zone: public 
-  - name: deny 8080/tcp port
-    ansible.posix.firewalld:
-      port: 8080/tcp
+      port: 80/tcp
       permanent: true
       state: disabled
       zone: public
-
-  - name: reload rule
+    notify: Reload Firewalld  
+############UFW####################  
+  - name: Allow 80/tcp port
+    community.general.ufw:
+      rule: deny
+      port: 80
+      proto: tcp
+    notify: Reload ufw
+##################################
+  handlers:
+  - name: Reload Firewalld
     service:
       name: firewalld
+      state: reloaded
+  - name: Reload ufw
+    community.generate.ufw:
       state: reloaded

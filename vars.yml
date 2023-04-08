@@ -1,0 +1,40 @@
+---
+- name: Variables
+  hosts: RedHat
+  become: yes
+
+  vars:
+    message1: Privet
+    message2: World
+    secret  : 43232R4RTF43FC2E214GF43
+
+  tasks:
+  - name: Print Secret Variable
+    debug:
+      var: message1, message2, secret
+  
+  - name: Print message with variables
+    debug:
+      msg: "What in variables? message1: {{message1}}, message2: {{message2}}, secret: {{secret}}"
+  
+  - debug:
+      msg: "Owner servers - {{owner}}"
+
+  - set_fact: full_message="{{message1}}{{message2}}{{secret}}"
+  
+  - name: merge variables
+    debug:
+      msg: "Full variables = {{full_message}}"
+ 
+  - name: Family and ip address
+    debug:
+      msg: "Family={{ansible_os_family}}, ip address={{ansible_all_ipv4_addresses}}"
+
+  - debug:
+      var: ansible_default_ipv4
+
+  - name: Shell variables
+    shell: uptime
+    register: results
+  - debug:
+      var: results.end
