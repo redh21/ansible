@@ -4,40 +4,39 @@
   become: yes
   
   vars:
-    src_file: /home/vm/ansible/html
-    dest_file: /var/www/  
+    src_folder: /home/vm/ansible/html
+    dest_folder: /var/www/  
 
   tasks:
-  - name: Install httpd
-    yum:
-      name: httpd
-      state: installed
-######################
+
   - name: Copy folder html
     copy:
-      src={{src_file }} 
-      dest={{ dest_file }}
+      src={{ src_folder }}
+      dest={{ dest_folder }}
       mode=0555
-    notify: Restart httpd
-########################
-  - name: Start httpd
-    service:
-      name: httpd
-      state: started
-      enabled: yes
-#######################
-  - name: Allow http service thorugh firewall
-    ansible.posix.firewalld:
-      port: 80/tcp
-      permanent: true
-      state: enabled
-    notify: Restart firewalld
-  - name: Restart firewalld
-    service:
-      name: firewalld
-      state: restarted
-########################
- 
+  
+  - block: #=====REDHAT=====#
+
+      - name: Install httpd
+        yum:
+          name: httpd
+          state: installed
+
+      - name: Start httpd
+        service:
+          name: httpd
+          state: started
+          enabled: yes
+
+      - name: Allow http service thorugh firewall
+        ansible.posix.firewalld:
+          port: 80/tcp
+          permanent: true
+          state: enabled
+        notify: Restart firewalld
+    when: ansible_os_family == "RedHat"
+
+
   handlers:
   - name: Restart httpd
     service:
