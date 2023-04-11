@@ -1,30 +1,36 @@
 ---
 - name: Deny net port through firewall
-  hosts: RedHat
+  hosts: production
   become: yes
 
   tasks:
-#########FIREWALLD################
-  - name: Deny 80/tcp port
-    ansible.posix.firewalld:
-      port: 80/tcp
-      permanent: true
-      state: disabled
-      zone: public
-    notify: Reload Firewalld  
-############UFW####################  
-  - name: Deny 80/tcp port
-    community.general.ufw:
-      rule: deny
-      port: 80
-      proto: tcp
-    notify: Reload ufw
+  - block: #=======REDHAT======#
+
+      - name: Deny 80/tcp port
+        ansible.posix.firewalld:
+          port: 80/tcp
+          permanent: true
+          state: disabled
+          zone: public
+        notify: Reload Firewalld 
+
+
+    when: ansible_os_family == "RedHat" 
+############################################## 
+  - block: #=======DEBIAN======#
+      - name: Deny 80 port
+        community.general.ufw:
+          rule: deny
+          port: 80
+      - name: Deny Apache Full
+        community.general.ufw:
+          name: "Apache Full"
+          rule: deny
+
+    when: ansible_os_family == "Debian"
 ##################################
   handlers:
   - name: Reload Firewalld
     service:
       name: firewalld
-      state: reloaded
-  - name: Reload ufw
-    community.generate.ufw:
       state: reloaded

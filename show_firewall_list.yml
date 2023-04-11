@@ -1,0 +1,25 @@
+---
+- name: Show firewall list
+  hosts: production
+  become: yes
+
+
+  tasks:
+  - block: #========REDHAT=========#
+      - name: Firewalld list
+        shell: firewall-cmd --list-all
+        register: firewalld_results
+      - debug: var=firewalld_results
+    when: ansible_os_family == "RedHat"
+######################################
+  - block: #========DEBIAN========#
+      - name: Enable ufw
+        community.general.ufw:
+          state: enabled    
+      - name: UFW list
+        shell: ufw status
+        register: ufw_results
+      - debug: var=ufw_results.stdout_lines
+    when: ansible_os_family == "Debian"
+#####################################33
+
