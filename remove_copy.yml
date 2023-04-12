@@ -4,7 +4,7 @@
   become: yes
   
   vars:
-    dest_folder: /var/www/html  
+    dest_folder: /var/www/html
 
   tasks:
   - name: Remove httpd
@@ -12,7 +12,7 @@
       name: httpd
       state: absent
 ###########################
-  - name: Remove folder html
+  - name: Remove file in html folder
     file:
       path={{dest_folder}}
       state=absent

@@ -2,11 +2,11 @@
 <HEAD>
 <TITLE>Redh</TITLE>
 <body style="background-color:grey; text-align:center;"> 
-	<h1>Never!!!</h1>
-<img src="never_give_up.jpg" width="500" leight="500">
-<br>
-Family OS : RedHat<br>
-Ip address : ['10.22.2.24']<br>
+<h1>Never!!!</h1>
+<p><img src="never_give_up.jpg" width="500" leight="500"></p>
+<p> Family OS: {{ ansible_os_family }}</p>
+<p>ipv4: {{ ansible_default_ipv4.address }}</p>
+<p style="color: gold"> Owner: {{ owner }}</p>
 <img src="vertex.jpg" width="1200" leight="500">
 </body>
 </HTML>

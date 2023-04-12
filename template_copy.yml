@@ -5,22 +5,19 @@
   
   vars:
     src_folder: /home/vm/ansible/html
-    dest_folder: /var/www/  
+    dest_folder: /var/www/html
 
   tasks:
+  - name: Create folder html
+    ansible.builtin.file: path=/var/www/html state=directory
 
   - block: #=====REDHAT=====#
 
       - name: Install httpd
-        yum:
-          name: httpd
-          state: installed
+        yum: name=httpd state=installed
 
       - name: Start httpd
-        service:
-          name: httpd
-          state: started
-          enabled: yes
+        service: name=httpd state=started enabled=yes
 
       - name: Allow http service thorugh firewall
         ansible.posix.firewalld:
@@ -30,12 +27,16 @@
         notify: Restart firewalld
     when: ansible_os_family == "RedHat"
   
-  - name: Copy folder html
-    copy:
-      src={{ src_folder }}
-      dest={{ dest_folder }}
-      mode=0555
+  - name: Generate INDEX.HTML file
+    template: src={{src_folder}}/index.html dest={{dest_folder}}/index.html mode=0555
+    notify: Restart httpd
 
+  - name: Copy files
+    copy: src={{ src_folder }}/{{item}} dest={{ dest_folder }} mode=0555
+    loop:
+        - "never_give_up.jpg"
+        - "vertex.jpg"
+    notify: Restart httpd
 
   handlers:
   - name: Restart httpd
