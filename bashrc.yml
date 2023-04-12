@@ -1,0 +1,12 @@
+---
+- name: Copy files
+  hosts: RedHat
+  become: yes
+  
+  vars:
+    src_file: /home/vm/.bashrc
+    dest_file: /home/vm/.bashrc
+
+  tasks:
+  - name: Copy SR_VARS in .BASHRC
+    ansible.builtin.copy: src={{src_file}} dest={{dest_file}}
