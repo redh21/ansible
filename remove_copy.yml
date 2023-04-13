@@ -7,7 +7,6 @@
     dest_folder: /var/www/html
 
   tasks:
-<<<<<<< HEAD
   - block: #=====REDHAT#
       - name: Remove httpd
         yum:
@@ -24,17 +23,12 @@
           permanent: yes
         notify: Restart firewalld
     when: ansible_os_family == "RedHat"
-=======
-  - name: Remove httpd
-    yum:
-      name: httpd
-      state: absent
-###########################
+###########################################
   - name: Remove file in html folder
     file:
       path={{dest_folder}}
       state=absent
-###########################
+##########################################
   - name: Deny 80 port
     ansible.posix.firewalld:
       port: 80/tcp
@@ -42,11 +36,6 @@
       permanent: yes
     notify: Restart firewalld
 ##########################
-
-
->>>>>>> 97c6b1e38af82469bec097fc79550b902b67ebd7
-
-  
   handlers:
   - name: Restart firewalld
     service:

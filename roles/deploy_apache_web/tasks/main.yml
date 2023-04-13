@@ -1,0 +1,32 @@
+---
+# tasks file for deploy_apache_web
+- name: Create folder html
+  ansible.builtin.file: path={{dest_folder}} state=directory
+
+- block: #=====REDHAT=====#
+
+    - name: Install httpd
+      yum: name=httpd state=installed
+
+    - name: Start httpd
+      service: name=httpd state=started enabled=yes
+
+    - name: Allow http service thorugh firewall
+      ansible.posix.firewalld:
+        port: 80/tcp
+        permanent: true
+        state: enabled
+      notify: Restart firewalld
+  when: ansible_os_family == "RedHat"
+
+- name: Generate INDEX.HTML file
+  template: src=index.html dest={{dest_folder}}/index.html mode=0555
+  notify: Restart httpd
+
+- name: Copy files
+  copy: src={{item}} dest={{ dest_folder }} mode=0555
+  loop:
+      - "never_give_up.jpg"
+      - "vertex.jpg"
+  notify: Restart httpd
+
