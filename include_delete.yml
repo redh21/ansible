@@ -11,8 +11,8 @@
   - name: Ping
     ping:
 
-  - name: Create folder
-    include: create_folder.yml
+  - name: Delete file
+    include: delete_file.yml
 
-  - name: Create file
-    include: create_file.yml
+  - name: delete folder
+    include: delete_folder.yml
