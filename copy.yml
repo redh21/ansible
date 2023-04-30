@@ -10,7 +10,6 @@
   tasks:
 
   - block: #=====REDHAT=====#
-
       - name: Install httpd
         yum:
           name: httpd
@@ -35,7 +34,7 @@
       src={{ src_folder }}
       dest={{ dest_folder }}
       mode=0555
-
+  when: ansible_os_family == "RedHat"
 
   handlers:
   - name: Restart httpd
