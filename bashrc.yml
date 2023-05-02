@@ -1,6 +1,6 @@
 ---
 - name: Copy files
-  hosts: RedHat
+  hosts: all
   become: yes
   
   vars:
