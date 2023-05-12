@@ -1,0 +1,43 @@
+---
+- name: Install Chep on servers
+  hosts: Cephs
+  become: yes
+
+  tasks:
+  - block: #####DEBIAN#####
+      - name: off ntp
+        shell: timedatectl set-ntp no
+      - name: change time
+        shell: timedatectl set-time '2023-05-12 11:51:00'
+      - name: "Configure hostname"
+        ansible.builtin.hostname:
+          name: "Ceph1"
+        delegate_to: Ceph1
+
+      - name: "Configure hostname"
+        ansible.builtin.hostname:
+          name: "Ceph2"
+        delegate_to: Ceph2
+
+      - name: "Configure hostname"
+        ansible.builtin.hostname:
+          name: "Ceph3"
+        delegate_to: Ceph3
+      - name: Allow 6789 port
+        community.general.ufw:
+          rule: allow
+          port: 6789
+          proto: tcp
+      - name: Allow port range 60000-61000
+        community.general.ufw:
+          rule: allow
+          port: 60000:61000
+          proto: tcp 
+      - name: Allow port range 60000-61000
+        community.general.ufw:
+          state: enabled
+      - name: disable SeLinux
+        ansible.posix.selinux:
+          state: disabled
+    when: ansible_os_family == "Debian"
+
