@@ -1,6 +1,6 @@
 ---
 - name: install_and_configurate_node_exporter
-  hosts: test
+  hosts: all
   become: yes
 
   vars:
@@ -10,7 +10,7 @@
   - block: #=====Debian=====#
       - name: Check if the node_exporter.tar exist
         stat:
-          path: ~/node_exporter-1.6.1.linux-amd64.tar.gz  # Укажите путь к файлу на целевом хосте
+          path: ~/node_exporter-1.6.1.linux-amd64.tar.gz
         register: node_exporter_tar
       - name: Download the node_exporter if it does not exist
         shell: wget -P ~/ https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz
@@ -30,9 +30,7 @@
           path: /usr/local/bin/node_exporter  
         register: node_exporter_exe
       - name: Copy node_exporter in /usr/local/bin
-        copy:
-          src: ~/node_exporter-1.6.1.linux-amd64/node_exporter
-          dest: /usr/local/bin/
+        shell: cp ~/node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin/
         when: not node_exporter_exe.stat.exists
       - name: Ensure the user is created
         user:
@@ -45,7 +43,9 @@
           path: /etc/systemd/system/node_exporter.service
         register: service_var
       - name: Copy node_exporter.service to remote host
-        shell: cp {{ service }} /etc/systemd/system
+        copy:
+          src: "{{ service }}"
+          dest: /etc/systemd/system/
         when: not service_var.stat.exists
       - name: Reload systemd daemon
         ansible.builtin.command: systemctl daemon-reload
@@ -66,10 +66,12 @@
         debug:
           var: service_status.status.ActiveState
     when: ansible_os_family == "Debian"
+
+
   - block: #=====RedHat=====#
       - name: Check if the node_exporter.tar exist
         stat:
-          path: ~/node_exporter-1.6.1.linux-amd64.tar.gz  # Укажите путь к файлу на целевом хосте
+          path: ~/node_exporter-1.6.1.linux-amd64.tar.gz
         register: node_exporter_tar
       - name: Download the node_exporter if it does not exist
         shell: wget -P ~/ https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz
@@ -89,9 +91,7 @@
           path: /usr/local/bin/node_exporter  
         register: node_exporter_exe
       - name: Copy node_exporter in /usr/local/bin
-        copy:
-          src: ~/node_exporter-1.6.1.linux-amd64/node_exporter
-          dest: /usr/local/bin/
+        shell: cp ~/node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin/
         when: not node_exporter_exe.stat.exists
       - name: Ensure the user is created
         user:
@@ -104,7 +104,10 @@
           path: /etc/systemd/system/node_exporter.service
         register: service_var
       - name: Copy node_exporter.service to remote host
-        shell: cp {{ service }} /etc/systemd/system
+        ansible.builtin.copy:
+          src: /home/redh/playbook/node_exporter.service
+          dest: /etc/systemd/system  
+        delegate_to: localhost  
         when: not service_var.stat.exists
       - name: Reload systemd daemon
         ansible.builtin.command: systemctl daemon-reload
@@ -124,4 +127,6 @@
       - name: Display the service status
         debug:
           var: service_status.status.ActiveState
-    when: ansible_os_family == "Debian"
+    when: ansible_os_family == "RedHat"
+  
+
