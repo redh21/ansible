@@ -4,7 +4,7 @@
   become: yes
 
   vars:
-    service: /home/redh/playbook/node_exporter.service
+    service: /home/redh/ansible/node_exporter/node_exporter.service
 
   tasks:
   - block: #=====Debian=====#
@@ -104,10 +104,9 @@
           path: /etc/systemd/system/node_exporter.service
         register: service_var
       - name: Copy node_exporter.service to remote host
-        ansible.builtin.copy:
-          src: /home/redh/playbook/node_exporter.service
-          dest: /etc/systemd/system  
-        delegate_to: localhost  
+        copy:
+          src: "{{ service }}"
+          dest: /etc/systemd/system/
         when: not service_var.stat.exists
       - name: Reload systemd daemon
         ansible.builtin.command: systemctl daemon-reload
@@ -128,5 +127,3 @@
         debug:
           var: service_status.status.ActiveState
     when: ansible_os_family == "RedHat"
-  
-
