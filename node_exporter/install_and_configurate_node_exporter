@@ -1,6 +1,6 @@
 ---
 - name: install_and_configurate_node_exporter
-  hosts: nextcloud-test
+  hosts: sangyra
   become: yes
 
   vars:
@@ -27,7 +27,7 @@
         when: not node_exporter.stat.exists
       - name: Check if the node_exporter exist in /usr/local/bin
         stat:
-          path: /usr/local/bin/node_exporter  
+          path: /usr/local/bin/node_exporter
         register: node_exporter_exe
       - name: Copy node_exporter in /usr/local/bin
         shell: cp ~/node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin/
@@ -65,65 +65,6 @@
       - name: Display the service status
         debug:
           var: service_status.status.ActiveState
+
     when: ansible_os_family == "Debian"
 
-
-  - block: #=====RedHat=====#
-      - name: Check if the node_exporter.tar exist
-        stat:
-          path: ~/node_exporter-1.6.1.linux-amd64.tar.gz
-        register: node_exporter_tar
-      - name: Download the node_exporter if it does not exist
-        shell: wget -P ~/ https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz
-        when: not node_exporter_tar.stat.exists
-      - name: Check if the node_exporter exist
-        stat:
-          path: ~/node_exporter-1.6.1.linux-amd64
-        register: node_exporter
-      - name: Extract the tar archive
-        unarchive:
-          src: ~/node_exporter-1.6.1.linux-amd64.tar.gz
-          dest: ~/
-          remote_src: yes
-        when: not node_exporter.stat.exists
-      - name: Check if the node_exporter exist in /usr/local/bin
-        stat:
-          path: /usr/local/bin/node_exporter  
-        register: node_exporter_exe
-      - name: Copy node_exporter in /usr/local/bin
-        shell: cp ~/node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin/
-        when: not node_exporter_exe.stat.exists
-      - name: Ensure the user is created
-        user:
-          name: node_exporter
-          state: present
-          shell: /bin/bash
-          createhome: no
-      - name: Check if the node_exporter.service exist in /etc/systemd/system/
-        stat:
-          path: /etc/systemd/system/node_exporter.service
-        register: service_var
-      - name: Copy node_exporter.service to remote host
-        copy:
-          src: "{{ service }}"
-          dest: /etc/systemd/system/
-        when: not service_var.stat.exists
-      - name: Reload systemd daemon
-        ansible.builtin.command: systemctl daemon-reload
-      - name: Start the service
-        ansible.builtin.systemd:
-          name: node_exporter.service
-          state: started
-      - name: Enable the service at boot
-        ansible.builtin.systemd:
-          name: node_exporter.service
-          enabled: yes
-      - name: Check the status of the service
-        ansible.builtin.systemd:
-          name: node_exporter.service
-        register: service_status
-
-      - name: Display the service status
-        debug:
-          var: service_status.status.ActiveState
-    when: ansible_os_family == "RedHat"
