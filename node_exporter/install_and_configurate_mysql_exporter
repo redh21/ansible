@@ -1,6 +1,6 @@
 ---
 - name: install_and_configurate_mysql_exporter
-  hosts: zabbix
+  hosts: nextcloud-test-notary
   become: yes
 
   vars:
@@ -32,24 +32,28 @@
       - name: Copy mysqld_exporter in /usr/local/bin
         shell: cp ~/mysqld_exporter-0.15.0.linux-amd64/mysqld_exporter /usr/local/bin/
         when: not mysqld_exporter_exe.stat.exists
-      - name: Create Prometheus exporter database user
-        shell: |
-          mysql -u root -p'P@ssw0rd!23' -h localhost -e "CREATE USER 'exporter'@'localhost' IDENTIFIED BY 'P@ssw0rd!23';"
-      - name: Grant grivileges for exporter
-        shell: |
-          mysql -u root -p'P@ssw0rd!23' -h localhost -e "GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'exporter'@'localhost';"
-      - name: flush privileges
-        shell: |
-          mysql -u root -p'P@ssw0rd!23' -h localhost -e "FLUSH PRIVILEGES;"
-      - name: Check if the node_exporter.service exist in /etc/systemd/system/
+      - name: Install ansible python3 mysql dependency
+        apt:
+          name: python3-mysqldb
+          state: latest
+      - name: Create User
+        mysql_user:
+          login_user: root
+          login_password: P@ssw0rd!23
+          name: exporter
+          host: localhost
+          password: P@ssw0rd!23
+          state: present
+          priv: '*.*:PROCESS,REPLICATION CLIENT,SELECT'
+      - name: Check if the .mysqld_exporter.cnf exist in /etc
         stat:
           path: /etc/.mysqld_exporter.cnf
-        register: exporter_var
+        register: sqlexporter_var
       - name: Configure database credentials
         copy:
           src: "{{ exporter }}"
           dest: /etc/
-        when: not exporter_var.stat.exists
+        when: not sqlexporter_var.stat.exists
       - name: Check if the mysql_exporter.service exist in /etc/systemd/system/
         stat:
           path: /etc/systemd/system/mysql_exporter.service
@@ -73,15 +77,83 @@
         ansible.builtin.systemd:
           name: mysql_exporter.service
         register: service_status
-
       - name: Display the service status
         debug:
           var: service_status.status.ActiveState
-
-
-
-
-
     when: ansible_os_family == "Debian"
 
+  - block: #=====REDHAT=====#
+      - name: Check if the mysqld_exporter.tar exist
+        stat:
+          path: ~/mysqld_exporter-0.15.0.linux-amd64.tar.gz
+        register: mysqld_exporter_tar
+      - name: Download the mysqld_exporter if it does not exist
+        shell: wget -P ~/ https://github.com/prometheus/mysqld_exporter/releases/download/v0.15.0/mysqld_exporter-0.15.0.linux-amd64.tar.gz
+        when: not mysqld_exporter_tar.stat.exists
+      - name: Check if the mysqld_exporter exist
+        stat:
+          path: ~/mysqld_exporter-0.15.0.linux-amd64
+        register: mysqld_exporter
+      - name: Extract the tar archive
+        unarchive:
+          src: ~/mysqld_exporter-0.15.0.linux-amd64.tar.gz
+          dest: ~/
+          remote_src: yes
+        when: not mysqld_exporter.stat.exists
+      - name: Check if the mysqld_exporter exist in /usr/local/bin
+        stat:
+          path: /usr/local/bin/mysqld_exporter  
+        register: mysqld_exporter_exe
+      - name: Copy mysqld_exporter in /usr/local/bin
+        shell: cp ~/mysqld_exporter-0.15.0.linux-amd64/mysqld_exporter /usr/local/bin/
+        when: not mysqld_exporter_exe.stat.exists
+      - name: Install ansible python3 mysql dependency
+        yum:
+          name: MySQL-python
+          state: latest
+      - name: Create User
+        mysql_user:
+          login_user: root
+          login_password: P@ssw0rd!23
+          name: exporter
+          host: localhost
+          password: P@ssw0rd!23
+          state: present
+          priv: '*.*:PROCESS,REPLICATION CLIENT,SELECT'
+      - name: Check if the .mysqld_exporter.cnf exist in /etc
+        stat:
+          path: /etc/.mysqld_exporter.cnf
+        register: sqlexporter_var
+      - name: Configure database credentials
+        copy:
+          src: "{{ exporter }}"
+          dest: /etc/
+        when: not sqlexporter_var.stat.exists
+      - name: Check if the mysql_exporter.service exist in /etc/systemd/system/
+        stat:
+          path: /etc/systemd/system/mysql_exporter.service
+        register: service_var
+      - name: Copy mysql_exporter.service to remote host
+        copy:
+          src: "{{ service }}"
+          dest: /etc/systemd/system/
+        when: not service_var.stat.exists
+      - name: Reload systemd daemon
+        ansible.builtin.command: systemctl daemon-reload
+      - name: Start the service
+        ansible.builtin.systemd:
+          name: mysql_exporter.service
+          state: started
+      - name: Enable the service at boot
+        ansible.builtin.systemd:
+          name: mysql_exporter.service
+          enabled: yes
+      - name: Check the status of the service
+        ansible.builtin.systemd:
+          name: mysql_exporter.service
+        register: service_status
+      - name: Display the service status
+        debug:
+          var: service_status.status.ActiveState
+    when: ansible_os_family == "RedHat"
 

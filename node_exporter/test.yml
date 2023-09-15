@@ -1,10 +1,14 @@
 ---
 - name: install_and_configurate_node_exporter
-  hosts: zabbix
+  hosts: testserver
   become: yes
   
   tasks:
     - name: Create user
-      shell: |
-        mysql -u root -p'P@ssw0rd!23' -h localhost -e "CREATE USER 'exporter'@'localhost' IDENTIFIED BY 'P@ssw0rd!23';"
-
+      mysql_user:
+        name: exporter  # Имя пользователя, которое вы хотите создать
+        host: localhost  # Хост, с которого разрешен доступ (например, localhost)
+        password: P@ssw0rd!23  # Пароль для пользователя
+        priv: '*.*:ALL'
+        login_user: root  # Имя пользователя для подключения к MySQL
+        login_password: P@ssw0rd!23
