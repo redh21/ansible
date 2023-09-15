@@ -1,0 +1,22 @@
+---
+- name: Allow net port through firewall
+  hosts: production
+  become: yes
+
+  tasks:
+  - block: #======REDHAT======#
+      - name: Allow 9100/tcp port
+        ansible.posix.firewalld:
+          port: 9100/tcp
+          permanent: true
+          state: enabled
+          zone: public
+        notify: Reload Firewalld  
+      - name: firewalld list
+        shell: firewall-cmd --list-all
+        register: status
+      - debug:
+          var: status.stdout_lines
+
+    when: ansible_os_family == "Debian"
+

@@ -1,0 +1,15 @@
+---
+- name: install_and_configurate_node_exporter
+  hosts: prometheus
+  become: yes
+  
+  tasks:
+  - block: #=====Debian=====#
+    - name: Add new host in prometheus
+      blockinfile:
+        path: /etc/prometheus/prometheus.yml
+        block: |
+            - job_name: 'agromap' 
+              scrape_interval: 5s
+              static_configs:
+                - targets: ['10.118.220.31:9100']" 

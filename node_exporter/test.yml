@@ -1,0 +1,10 @@
+---
+- name: install_and_configurate_node_exporter
+  hosts: zabbix
+  become: yes
+  
+  tasks:
+    - name: Create user
+      shell: |
+        mysql -u root -p'P@ssw0rd!23' -h localhost -e "CREATE USER 'exporter'@'localhost' IDENTIFIED BY 'P@ssw0rd!23';"
+

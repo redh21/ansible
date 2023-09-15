@@ -1,6 +1,6 @@
 ---
 - name: install_and_configurate_node_exporter
-  hosts: all
+  hosts: nextcloud-test
   become: yes
 
   vars:
