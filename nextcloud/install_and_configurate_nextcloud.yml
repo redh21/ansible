@@ -1,0 +1,118 @@
+---
+- name: install_and_configurate_node_exporter
+  hosts: testserver
+  become: yes
+
+  vars:
+    cloud: /home/redh/ansible/nextcloud/nextcloud.conf
+    root_pass: P@ssw0rd!23
+  tasks:
+  - block: #=====Debian=====#
+      - name: install unzip
+        apt:
+          name: unzip
+          state: latest
+      - name: install nginx
+        apt:
+          name: nginx
+          state: latest
+      - name: install mariadb
+        apt:
+          name: mariadb-server
+          state: latest
+      - name: install php7.4 dependencies
+        apt:
+          name:
+            - php7.4
+            - php7.4-cli
+            - php7.4-common
+            - php7.4-json
+            - php7.4-fpm
+            - php7.4-curl
+            - php7.4-mysql
+            - php7.4-gd
+            - php7.4-opcache
+            - php7.4-xml
+            -  php7.4-zip
+            - php7.4-mbstring
+          state: present
+      - name: check service status php7.4-fpm
+        shell: systemctl status php7.4-fpm
+        register: fpm
+      - debug:
+          var: fpm.stdout_lines
+      - name: check service status nginx
+        shell: systemctl status nginx
+        register: nginx
+      - debug:
+          var: nginx.stdout_lines
+      - name: check service status mariadb
+        shell: systemctl status mariadb
+        register: mariadb
+      - debug:
+          var: mariadb.stdout_lines
+      - name: change password of root
+        mysql_user:
+          name: root
+          host: localhost
+          password: "{{ root_pass }}"
+          login_user: root
+          login_password: "{{ root_pass }}"
+      - name: create nextcloud db    
+        mysql_db:
+          name: nextcloud
+          state: present
+          login_user: root
+          login_password: "{{ root_pass }}"
+      - name: check if the nextcloud.zip exist
+        stat:
+          path: /var/www/nextcloud-25.0.12.zip
+        register: nextcloud_zip
+      - name: download nexcloud
+        shell: wget https://download.nextcloud.com/server/releases/nextcloud-25.0.12.zip -P /var/www/
+        when: not nextcloud_zip.stat.exists
+      - name: check if the nextcloud exist
+        stat:
+          path: /var/www/nextcloud
+        register: nextcloud
+      - name: extract the tar archive
+        unarchive:
+          src: /var/www/nextcloud-25.0.12.zip
+          dest: /var/www/
+          remote_src: yes
+        when: not nextcloud.stat.exists
+      - name: make nextcloud owner www-data
+        shell: chown -R www-data:www-data /var/www/nextcloud
+      - name: check if the default file exist in /etc/nginx/sites-available/
+        stat:
+          path: /etc/nginx/sites-available/default
+        register: default
+      - name: remove default file if exist
+        shell: rm /etc/nginx/sites-available/default
+        when: default.stat.exists 
+      - name: check if the link file exist in /etc/nginx/sites-enabled/
+        stat:
+          path: /etc/nginx/sites-enabled/default
+        register: link
+      - name: remove link file if exist
+        shell: rm /etc/nginx/sites-enabled/default
+        when: link.stat.exists
+      - name: check if the nextcloud.conf file exist in /etc/nginx/sites-available/
+        stat:
+          path: /etc/nginx/sites-available/nextcloud.conf
+        register: nextcloud
+      - name: copy nextcloud.conf to remote host
+        copy:
+          src: "{{ cloud }}"
+          dest: /etc/nginx/sites-available
+        when: not nextcloud.stat.exists
+      - name: check if the nextcloud.conf file exist in /etc/nginx/sites-enabled/
+        stat:
+          path: /etc/nginx/sites-enabled/nextcloud.conf
+        register: nextcloud
+      - name: create symbolic link
+        shell: ln -s /etc/nginx/sites-available/nextcloud.conf -t /etc/nginx/sites-enabled/  
+      - name: restat nginx 
+        ansible.builtin.systemd:
+          name: nginx
+          state: restarted
