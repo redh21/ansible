@@ -1,0 +1,48 @@
+---
+- block: #=====Debian=====#
+    - name: Allow 10050/tcp port
+      ufw:
+        rule: allow
+        port: 10050
+        proto: tcp
+
+    - name: Install Zabbix Agent
+      apt:
+        name: zabbix-agent
+        state: latest
+        update_cache: yes
+
+    - name: Copy Zabbix Agent Config
+      template:
+        src: DEBIANzabbix_agentd.conf.j2
+        dest: /etc/zabbix/zabbix_agentd.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart zabbix-agent
+    
+  when: ansible_os_family == "Debian" 
+
+- block: #=====RedHat=====#
+    - name: Allow 10050/tcp port
+      ansible.posix.firewalld:
+        state: enabled
+        port: 10050/tcp
+        permanent: true
+
+    - name: Install Zabbix Agent
+      yum:
+        name: zabbix-agent
+        state: latest
+        update_cache: yes
+
+    - name: Copy Zabbix Agent Config
+      template:
+        src: REDHATzabbix_agentd.conf.j2
+        dest: /etc/zabbix_agentd.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart zabbix-agent
+  when: ansible_os_family == "RedHat" 
+

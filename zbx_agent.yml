@@ -1,0 +1,7 @@
+---
+- name: config zabbix agent
+  hosts: zabbix
+  become: yes
+
+  roles:
+    - zabbix_agent
