@@ -1,0 +1,7 @@
+---
+- name: Install Tomcat and Java
+  hosts: tomcat
+  become: yes
+  roles:
+    - tomcat
+

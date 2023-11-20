@@ -1,0 +1,48 @@
+---
+- block: #======DEBIAN======#
+    - name: Update package cache and install Java
+      apt:
+        name: openjdk-11-jdk  # Измените на подходящий пакет для вашей операционной системы
+        update_cache: yes
+    - name: Check if the tomcat.tar exist
+      stat:
+        path: /tmp/apache-tomcat-9.0.83.tar.gz
+      register: tomcat_tar
+    - name: Download Tomcat
+      get_url:
+        url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.83/bin/apache-tomcat-9.0.83.tar.gz
+        dest: /tmp
+      when: tomcat_tar.stat.exists
+    - name: Check if the tomcat.tar exist
+      stat:
+        path: /opt/apache-tomcat-9.0.83.tar.gz
+      register: tomcat
+    - name: Extract Apache Tomcat
+      ansible.builtin.unarchive:
+        src: /tmp/apache-tomcat-9.0.83.tar.gz
+        dest: /opt
+        remote_src: yes
+      when: not tomcat.stat.exists
+    - name: Check if the tomcat.tar exist
+      stat:
+        path: /opt/apache-tomcat-9.0.83
+      register: tomcat_dir
+    - name: Rename Tomcat directory
+      shell: mv /opt/apache-tomcat-9.0.83 /opt/tomcat
+      when: tomcat_dir.stat.exists
+    - name: Copy tomcat.service
+      template:
+        src: tomcat.service.j2
+        dest: /etc/systemd/system/tomcat.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: 
+        - Reload systemd daemon
+    - name: Start tomcat
+      ansible.builtin.systemd:
+        name: tomcat
+        state: started
+        enabled: true
+
+  when: ansible_os_family == "Debian"
