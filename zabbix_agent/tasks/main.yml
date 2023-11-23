@@ -19,8 +19,10 @@
         owner: root
         group: root
         mode: '0644'
+    - name: Rename zabbix_agentd_conf.d to zabbix_agentd.d
+      shell: mv /etc/zabbix/zabbix_agentd.conf.d /etc/zabbix/zabbix_agentd.d
       notify: Restart zabbix-agent
-    
+
   when: ansible_os_family == "Debian" 
 
 - block: #=====RedHat=====#
