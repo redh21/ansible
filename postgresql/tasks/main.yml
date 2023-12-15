@@ -1,0 +1,18 @@
+---
+- block: #======DEBIAN======#
+    - name: Install postgresql-12
+      apt:
+        name:
+          - postgresql-12  # Измените на подходящий пакет для вашей операционной системы
+          - postgresql-client-12
+        state: present
+    - name: Check status
+      systemd:
+        name: postgresql
+      register: postgresql_status
+
+    - debug:
+        var: postgresql_status.status.ActiveState
+
+  when: ansible_os_family == "Debian"
+

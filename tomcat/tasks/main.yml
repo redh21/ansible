@@ -12,24 +12,25 @@
       get_url:
         url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.83/bin/apache-tomcat-9.0.83.tar.gz
         dest: /tmp
-      when: tomcat_tar.stat.exists
+      when: not tomcat_tar.stat.exists
     - name: Check if the tomcat.tar exist
       stat:
-        path: /opt/apache-tomcat-9.0.83.tar.gz
+        path: /tmp/apache-tomcat-9.0.83
       register: tomcat
     - name: Extract Apache Tomcat
       ansible.builtin.unarchive:
         src: /tmp/apache-tomcat-9.0.83.tar.gz
-        dest: /opt
+        dest: /tmp
         remote_src: yes
       when: not tomcat.stat.exists
-    - name: Check if the tomcat.tar exist
+    - name: Check if the tomcat exist
       stat:
-        path: /opt/apache-tomcat-9.0.83
+        path: /opt/tomcat
       register: tomcat_dir
-    - name: Rename Tomcat directory
-      shell: mv /opt/apache-tomcat-9.0.83 /opt/tomcat
-      when: tomcat_dir.stat.exists
+    - name: Copy tomcat in opt
+      command: cp -r /tmp/apache-tomcat-9.0.83 /opt/tomcat
+      when: not tomcat_dir.stat.exists
+
     - name: Copy tomcat.service
       template:
         src: tomcat.service.j2
@@ -44,5 +45,9 @@
         name: tomcat
         state: started
         enabled: true
-
+    - name:
+      command: java --version
+      register: java_version
+    - debug:
+        var: java_version.stdout
   when: ansible_os_family == "Debian"

@@ -1,0 +1,34 @@
+---
+- block: #======DEBIAN======#
+    - name: Add Node.js 16.x repository key
+      ansible.builtin.apt_key:
+        url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
+        state: present
+    - name: Add Node.js 16.x repository
+      ansible.builtin.apt_repository:
+        repo: "deb https://deb.nodesource.com/node_16.x {{ ansible_distribution_release }} main"
+        state: present
+        update_cache: yes
+    - name: Install Node.js 16
+      ansible.builtin.apt:
+        name: nodejs
+        state: latest
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install npm
+      ansible.builtin.apt:
+        name: npm
+        state: latest
+    - name: Print version node.js
+      command: node -v
+      register: node_version
+    - name: Print version npm
+      command: npm -v
+      register: npm_version
+    
+    - debug:
+        var: "Node.js version {{ node_version.stdout }} | npm {{ npm_version.stdout }}" 
+  when: ansible_os_family == "Debian"
+
