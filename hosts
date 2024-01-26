@@ -1,34 +1,8 @@
-[RedHat]
-CentOS1    ansible_ssh_host=10.22.2.23 ansible_ssh_user=vm ansible_sudo_pass=Ares!21! owner=vm
-AlmaLinux1 ansible_ssh_host=10.22.2.24 ansible_ssh_user=vm ansible_sudo_pass=Ares!21! owner=vm
+[other]
+nextcloud_call-center    ansible_ssh_host=10.118.50.45 ansible_ssh_user=root ansible_sudo_pass=sam#sung@#123 owner=root
+online-chat ansible_ssh_host=10.118.50.46 ansible_ssh_user=chat ansible_sudo_pass=82d0aAZzZP owner=chat
 
-[Debian]
-LAMP    ansible_ssh_host=10.22.2.20 ansible_ssh_user=vr ansible_sudo_pass=Ares!21! owner=vm
-kiber10 ansible_ssh_host=10.22.2.21 ansible_ssh_user=vr ansible_sudo_pass=Ares!21! owner=vm
- 
-[Redhat_manage]
-FreeIPA ansible_ssh_host=10.22.2.4  ansible_ssh_user=vr ansible_sudo_pass=Ares!21! owner=vm
-
-[Debian_manage]
-Zabbix  ansible_ssh_host=10.22.2.7  ansible_ssh_user=vm ansible_sudo_pass=Ares!21! owner=vm
-Git     ansible_ssh_host=10.22.2.8  ansible_ssh_user=vm ansible_sudo_pass=Ares!21! owner=vm
-Samba   ansible_ssh_host=10.22.2.12 ansible_ssh_user=vm ansible_sudo_pass=Ares!21! owner=vm
-Docker  ansible_ssh_host=10.22.2.25 ansible_ssh_user=vm ansible_sudo_pass=Ares!21! owner=vm
-Zimbra  ansible=ssh_host=10.22.2.22 ansible_ssh_user=vm ansible_sudo_pass=Ares!21! owner=vm
-
-[production:children]
-RedHat
-Debian
-
-[Cephs]
-Ceph1  ansible_ssh_host=10.22.2.30  ansible_ssh_user=vm ansible_sudo_pass=Ares!21! owner=vm
-Ceph2  ansible_ssh_host=10.22.2.31  ansible_ssh_user=vm ansible_sudo_pass=Ares!21! owner=vm
-Ceph3  ansible_ssh_host=10.22.2.32  ansible_ssh_user=vm ansible_sudo_pass=Ares!21! owner=vm
-
-[management:children]
-Redhat_manage
-Debian_manage
-
-[management]
-#ansible ansible_ssh_host=127.0.0.1 ansible_ssh_user=vm ansible_ssh_pass=Ares!21! owner=vm
-
+[zbx]
+goverp27 ansible_ssh_host=10.118.50.27 ansible_ssh_user=pibadmin ansible_sudo_pass=5PrJw6}Z owner=pibadmin
+[tjpa]
+kgKoncept ansible_ssh_host=10.118.50.50 ansible_ssh_user=koncept ansible_sudo_pass=Z8S8Tsl1j7aL owner=koncept

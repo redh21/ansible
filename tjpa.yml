@@ -1,0 +1,7 @@
+---
+- name: install tjpa
+  hosts: tjpa
+  become: yes
+  roles:
+    - tomcat
+    - postgresql
