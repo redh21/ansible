@@ -19,9 +19,9 @@ try:
     group_id = groups[0]['groupid']
 
     # Получаем идентификатор шаблона
-    templates = zapi.template.get(filter={'name': 'Template OS Windows by Zabbix agent'})
+    templates = zapi.template.get(filter={'name': 'Windows by Zabbix agent')
     if not templates:
-        raise ZabbixAPIException("Template 'Template OS Windows' not found.")
+        raise ZabbixAPIException("Template 'Windows by Zabbix agent' not found.")
     template_id = templates[0]['templateid']
 
     # Создание нового хоста
