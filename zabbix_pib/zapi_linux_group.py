@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from pyzabbix import ZabbixAPI, ZabbixAPIException
 
-zabbix_server   = 'http://10.118.210.31/zabbix'
+zabbix_server   = 'http://172.16.10.21/zabbix'
 zabbix_user     = 'Admin'
-zabbix_password = 'P@ssw0rd!23'
+zabbix_password = 'ivc1991kg@!'
 
 try:
     zapi = ZabbixAPI(zabbix_server)
@@ -19,9 +19,9 @@ try:
     group_id = groups[0]['groupid']
 
     # Получаем идентификатор шаблона
-    templates = zapi.template.get(filter={'name': 'Template OS Linux by Zabbix agent'})
+    templates = zapi.template.get(filter={'name': 'Linux by Zabbix agent'})
     if not templates:
-        raise ZabbixAPIException("Template 'Template OS Linux' not found.")
+        raise ZabbixAPIException("Template 'Linux by Zabbix agent' not found.")
     template_id = templates[0]['templateid']
 
     # Создание нового хоста
