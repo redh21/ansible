@@ -1,7 +1,7 @@
 ---
 - name: config zabbix agent
-  hosts: zabbix_agents
+  hosts: zbx
   become: yes
 
   roles:
-    - zabbix_agent
+    - zabbix_agent_local
