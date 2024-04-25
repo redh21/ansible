@@ -1,8 +1,0 @@
-[other]
-nextcloud_call-center    ansible_ssh_host=10.118.50.45 ansible_ssh_user=root ansible_sudo_pass=sam#sung@#123 owner=root
-online-chat ansible_ssh_host=10.118.50.46 ansible_ssh_user=chat ansible_sudo_pass=82d0aAZzZP owner=chat
-
-[zbx]
-goverp27 ansible_ssh_host=10.118.50.27 ansible_ssh_user=pibadmin ansible_sudo_pass=5PrJw6}Z owner=pibadmin
-[tjpa]
-kgKoncept ansible_ssh_host=10.118.50.50 ansible_ssh_user=koncept ansible_sudo_pass=Z8S8Tsl1j7aL owner=koncept

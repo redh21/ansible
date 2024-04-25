@@ -19,6 +19,7 @@
         owner: root
         group: root
         mode: '0644'
+      notify: Restart zabbix-agent
     - name: Rename zabbix_agentd_conf.d to zabbix_agentd.d
       shell: mv /etc/zabbix/zabbix_agentd.conf.d /etc/zabbix/zabbix_agentd.d
       notify: Restart zabbix-agent
@@ -40,7 +41,7 @@
 
     - name: Copy Zabbix Agent Config
       template:
-        src: REDHATzabbix_agentd.conf.j2
+        src: REDHATzabbix_agentd.conf.j2 
         dest: /etc/zabbix_agentd.conf
         owner: root
         group: root

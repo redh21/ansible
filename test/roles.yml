@@ -1,8 +1,0 @@
----
-- name: Install apache and upload my site
-  hosts: RedHat
-  become: yes
-
-  roles:
-    - { role: deploy_apache_web, when: ansible_system == "Linux" }
-

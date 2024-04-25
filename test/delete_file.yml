@@ -1,9 +1,0 @@
----
-- name: Delete file1
-  file:
-    path: /home/vm/folder1/file1.txt
-    state: absent
-- name: Delete file2
-  file:
-    path: /home/vm/folder2/file2.txt                       
-    state: absent

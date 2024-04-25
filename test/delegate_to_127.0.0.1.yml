@@ -1,8 +1,0 @@
----
-- name: delegate 
-  hosts: RedHat
-  become: yes
-  tasks:
-  - name: print httpd version
-    shell: echo {{ansible_default_ipv4}} and {{ansible_nodename}} >> /home/log.txt
-    delegate_to: 127.0.0.1
