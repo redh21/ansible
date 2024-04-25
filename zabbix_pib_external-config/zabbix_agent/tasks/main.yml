@@ -1,0 +1,21 @@
+---
+- block: #=====Debian=====#
+
+    - name: Copy Zabbix Agent Config
+      template:
+        src: DEBIANzabbix_agentd.conf.j2
+        dest: /etc/zabbix/zabbix_agentd.conf
+        owner: root
+        group: root
+        mode: '0644'
+    - name: Check if zabbix_agentd.conf.d directory exists
+      stat:
+        path: /etc/zabbix/zabbix_agentd.conf.d
+      register: zabbix_agentd_conf_d_dir
+    - name: Rename zabbix_agentd_conf.d to zabbix_agentd.d
+      command: mv /etc/zabbix/zabbix_agentd.conf.d /etc/zabbix/zabbix_agentd.d
+      when: zabbix_agentd_conf_d_dir.stat.exists
+      notify: Restart zabbix-agent
+
+  when: ansible_os_family == "Debian" 
+

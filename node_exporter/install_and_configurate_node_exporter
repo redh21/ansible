@@ -1,10 +1,10 @@
 ---
 - name: install_and_configurate_node_exporter
-  hosts: sangyra
+  hosts: nodeex
   become: yes
 
   vars:
-    service: /home/redh/ansible/node_exporter/node_exporter.service
+    service: /root/ansible/node_exporter/node_exporter.service
 
   tasks:
   - block: #=====Debian=====#
