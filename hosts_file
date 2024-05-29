@@ -1,0 +1,2 @@
+[zbx_external]
+en1 ansible_ssh_host=85.113.17.189 ansible_ssh_user=sysadmin ansible_sudo_pass=qsefthu123 owner=sysadmin
