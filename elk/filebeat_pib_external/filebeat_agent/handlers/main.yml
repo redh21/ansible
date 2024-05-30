@@ -1,0 +1,11 @@
+---
+- name: Restart filebeat
+  systemd:
+    name: filebeat
+    state: restarted
+  listen: "Restart filebeat"
+- name: Enable filebeat
+  systemd:
+    name: filebeat
+    state: enabled
+  listen: "Enable filebeat"

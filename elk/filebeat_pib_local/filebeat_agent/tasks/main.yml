@@ -1,0 +1,71 @@
+---
+- block: #=====Debian=====#
+    - name: Import GPG key for repository
+      shell: wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+
+    - name: Check file for reository
+      stat:
+        path: /etc/apt/sources.list.d/elastic-8.x.list
+      register: elk_8 
+    - name: Create file for repository
+      ansible.builtin.file: 
+        path: /etc/apt/sources.list.d/elastic-8.x.list
+        state: touch
+        mode: '0644'
+      when: not elk_8.stat.exists
+
+    - name: Write repository url in file
+      ansible.builtin.lineinfile:
+        path: /etc/apt/sources.list.d/elastic-8.x.list
+        line: "deb https://artifacts.elastic.co/packages/8.x/apt stable main"
+ 
+    - name: Update packeges
+      shell: apt update
+    
+    - name: Install filebeate
+      apt:
+        name: filebeat
+        state: present
+   
+    - name: Copy filebeat.yml
+      template:
+        src: filebeat.j2
+        dest: /etc/filebeat/filebeat.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart filebeat
+      systemd:
+        name: filebeat
+        state: restarted
+    
+    - name: Enable autostart filebeat
+      shell: "systemctl enable filebeat"
+    
+    - name: Copy json-template.conf
+      template:
+        src: json-template.j2
+        dest: /etc/rsyslog.d/json-template.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy logstash.conf
+      template:
+        src: logstash.j2
+        dest: /etc/rsyslog.d/logstash.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart rsyslog
+      systemd:
+        name: rsyslog
+        state: restarted
+
+
+
+
+  when: ansible_os_family == "Debian"
+

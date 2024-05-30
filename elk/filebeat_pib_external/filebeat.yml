@@ -1,0 +1,7 @@
+---
+- name: config zabbix agent
+  hosts: elk_external
+  become: yes
+
+  roles:
+    - filebeat_agent 
