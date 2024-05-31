@@ -27,11 +27,6 @@
         name: filebeat
         state: present
    
-    - name: Check filebeat.yml exist
-      stat:
-        path: /etc/filebeat/filebeat.yml
-      register: filebeat_yml
-
     - name: Copy filebeat.yml
       template:
         src: filebeat.j2
@@ -39,11 +34,36 @@
         owner: root
         group: root
         mode: '0644'
-      when: not filebeat_yml.stat.exists
-      notify: Restart filebeat
-      notify: Enable filebeat
 
-        
+    - name: Restart filebeat
+      systemd:
+        name: filebeat
+        state: restarted
+    
+    - name: Enable autostart filebeat
+      shell: "systemctl enable filebeat"
+    
+    - name: Copy json-template.conf
+      template:
+        src: json-template.j2
+        dest: /etc/rsyslog.d/json-template.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy logstash.conf
+      template:
+        src: logstash.j2
+        dest: /etc/rsyslog.d/logstash.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart rsyslog
+      systemd:
+        name: rsyslog
+        state: restarted
+
 
 
 

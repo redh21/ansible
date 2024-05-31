@@ -10,16 +10,16 @@
       register: tomcat_tar
     - name: Download Tomcat
       get_url:
-        url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.83/bin/apache-tomcat-9.0.83.tar.gz
+        url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.89/bin/apache-tomcat-9.0.89.tar.gz
         dest: /tmp
       when: not tomcat_tar.stat.exists
     - name: Check if the tomcat.tar exist
       stat:
-        path: /tmp/apache-tomcat-9.0.83
+        path: /tmp/apache-tomcat-9.0.89
       register: tomcat
     - name: Extract Apache Tomcat
       ansible.builtin.unarchive:
-        src: /tmp/apache-tomcat-9.0.83.tar.gz
+        src: /tmp/apache-tomcat-9.0.89.tar.gz
         dest: /tmp
         remote_src: yes
       when: not tomcat.stat.exists
@@ -28,7 +28,7 @@
         path: /opt/tomcat
       register: tomcat_dir
     - name: Copy tomcat in opt
-      command: cp -r /tmp/apache-tomcat-9.0.83 /opt/tomcat
+      command: cp -r /tmp/apache-tomcat-9.0.89 /opt/tomcat
       when: not tomcat_dir.stat.exists
 
     - name: Copy tomcat.service
@@ -50,4 +50,18 @@
       register: java_version
     - debug:
         var: java_version.stdout
+    
+    - name: Copy tomcat config
+      template:
+        src: server.j2
+        dest: /opt/tomcat/conf/server.xml
+        mode: "0644"
+   
+    - name: Restart tomcat
+      systemd:
+        name: tomcat.service
+        state: restarted
+
+    - name: Enable autostart
+      shell: systemctl enable tomcat.service
   when: ansible_os_family == "Debian"
