@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from pyzabbix import ZabbixAPI, ZabbixAPIException
 
-zabbix_server   = 'http://10.118.210.31/zabbix'
+zabbix_server   = 'http://10.118.220.36/zabbix'
 zabbix_user     = 'Admin'
 zabbix_password = 'P@ssw0rd!23'
 

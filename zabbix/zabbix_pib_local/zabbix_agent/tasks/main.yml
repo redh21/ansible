@@ -5,12 +5,28 @@
         rule: allow
         port: 10050
         proto: tcp
+   
+    - name: Check zabbix deb file 
+      stat:
+        path: /tmp/zabbix-release_7.0-2+ubuntu24.04_all.deb
+      register: zbx_deb
 
-    - name: Install Zabbix Agent
+    - name: Ensure Zabbix release package is downloaded
+      shell: "wget -P /tmp/ https://repo.zabbix.com/zabbix/7.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_7.0-2+ubuntu24.04_all.deb"
+      when: not zbx_deb.stat.exists
+
+    - name: Install Zabbix release package
+      apt:
+        deb: /tmp/zabbix-release_7.0-2+ubuntu24.04_all.deb
+
+    - name: Update packages list
+      apt:
+        update_cache: yes
+    
+    - name: Install zabbix-agent
       apt:
         name: zabbix-agent
-        state: latest
-        update_cache: yes
+        state: present
 
     - name: Copy Zabbix Agent Config
       template:
@@ -20,37 +36,6 @@
         group: root
         mode: '0644'
       notify: Restart zabbix-agent
-    - name: Rename zabbix_agentd_conf.d to zabbix_agentd.d
-      shell: mv /etc/zabbix/zabbix_agentd.conf.d /etc/zabbix/zabbix_agentd.d
-      notify: Restart zabbix-agent
 
-  when: ansible_os_family == "Debian" 
-
-- block: #=====RedHat=====#
-    - name: Allow 10050/tcp port
-      ansible.posix.firewalld:
-        state: enabled
-        port: 10050/tcp
-        permanent: true
-
-    - name: Install Zabbix Agent
-      yum:
-        name: zabbix-agent
-        state: latest
-        update_cache: yes
-
-    - name: Copy Zabbix Agent Config
-      template:
-        src: REDHATzabbix_agentd.conf.j2 
-        dest: /etc/zabbix_agentd.conf
-        owner: root
-        group: root
-        mode: '0644'
-      notify: Restart zabbix-agent
-    - name: Hostname
-      command: 'hostnamectl'
-      register: hostname
-    - debug:
-        var: hostname.stdout
-  when: ansible_os_family == "RedHat" 
+  when: ansible_os_family == "Debian"
 

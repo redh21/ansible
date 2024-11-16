@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from pyzabbix import ZabbixAPI, ZabbixAPIException
 
-zabbix_server   = 'http://10.118.210.31/zabbix'
+zabbix_server   = 'http://10.118.220.36/zabbix'
 zabbix_user     = 'Admin'
 zabbix_password = 'P@ssw0rd!23'
 
@@ -19,7 +19,7 @@ try:
     group_id = groups[0]['groupid']
 
     # Получаем идентификатор шаблона
-    templates = zapi.template.get(filter={'name': 'Template OS Linux by Zabbix agent')
+    templates = zapi.template.get(filter={'name': 'Template OS Windows by Zabbix agent'})
     if not templates:
         raise ZabbixAPIException("Template 'OS Windows by Zabbix agent' not found.")
     template_id = templates[0]['templateid']
