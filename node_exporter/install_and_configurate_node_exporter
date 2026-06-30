@@ -1,70 +1,97 @@
 ---
 - name: install_and_configurate_node_exporter
-  hosts: nodeex
+  hosts: node_exporter
   become: yes
 
   vars:
-    service: /root/ansible/node_exporter/node_exporter.service
+    node_exp_ver: "1.11.1"
 
   tasks:
-  - block: #=====Debian=====#
-      - name: Check if the node_exporter.tar exist
-        stat:
-          path: ~/node_exporter-1.6.1.linux-amd64.tar.gz
-        register: node_exporter_tar
-      - name: Download the node_exporter if it does not exist
-        shell: wget -P ~/ https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz
-        when: not node_exporter_tar.stat.exists
-      - name: Check if the node_exporter exist
-        stat:
-          path: ~/node_exporter-1.6.1.linux-amd64
-        register: node_exporter
-      - name: Extract the tar archive
-        unarchive:
-          src: ~/node_exporter-1.6.1.linux-amd64.tar.gz
-          dest: ~/
-          remote_src: yes
-        when: not node_exporter.stat.exists
-      - name: Check if the node_exporter exist in /usr/local/bin
-        stat:
-          path: /usr/local/bin/node_exporter
-        register: node_exporter_exe
-      - name: Copy node_exporter in /usr/local/bin
-        shell: cp ~/node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin/
-        when: not node_exporter_exe.stat.exists
-      - name: Ensure the user is created
-        user:
-          name: node_exporter
-          state: present
-          shell: /bin/bash
-          createhome: no
-      - name: Check if the node_exporter.service exist in /etc/systemd/system/
-        stat:
-          path: /etc/systemd/system/node_exporter.service
-        register: service_var
-      - name: Copy node_exporter.service to remote host
-        copy:
-          src: "{{ service }}"
-          dest: /etc/systemd/system/
-        when: not service_var.stat.exists
-      - name: Reload systemd daemon
-        ansible.builtin.command: systemctl daemon-reload
-      - name: Start the service
-        ansible.builtin.systemd:
-          name: node_exporter.service
-          state: started
-      - name: Enable the service at boot
-        ansible.builtin.systemd:
-          name: node_exporter.service
-          enabled: yes
-      - name: Check the status of the service
-        ansible.builtin.systemd:
-          name: node_exporter.service
-        register: service_status
 
-      - name: Display the service status
-        debug:
-          var: service_status.status.ActiveState
+    - name: Gather service facts
+      ansible.builtin.service_facts:
 
-    when: ansible_os_family == "Debian"
+    - name: Installation Process
+      block:
+        - name: Download node_exporter archive
+          ansible.builtin.get_url:
+            url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exp_ver }}/node_exporter-{{ node_exp_ver }}.linux-amd64.tar.gz"
+            dest: "/tmp/node_exporter-{{ node_exp_ver }}.linux-amd64.tar.gz"
+            mode: '0644'
 
+        - name: Extract node_exporter archive
+          ansible.builtin.unarchive:
+            src: "/tmp/node_exporter-{{ node_exp_ver }}.linux-amd64.tar.gz"
+            dest: "/tmp/"
+            remote_src: yes
+
+        - name: Copy binary to /usr/local/bin
+          ansible.builtin.copy:
+            src: "/tmp/node_exporter-{{ node_exp_ver }}.linux-amd64/node_exporter"
+            dest: "/usr/local/bin/node_exporter"
+            mode: '0755'
+            owner: root
+            group: root
+            remote_src: yes
+
+        - name: Ensure node_exporter system user exists
+          ansible.builtin.user:
+            name: node_exporter
+            state: present
+            system: yes
+            shell: /usr/sbin/nologin
+            createhome: no
+
+        - name: Create node_exporter.service file directly
+          ansible.builtin.copy:
+            dest: /etc/systemd/system/node_exporter.service
+            mode: '0644'
+            owner: root
+            group: root
+            content: |
+              [Unit]
+              Description=Node Exporter
+              Wants=network-online.target
+              After=network-online.target
+
+              [Service]
+              User=node_exporter
+              Group=node_exporter
+              Type=simple
+              ExecStart=/usr/local/bin/node_exporter
+
+              [Install]
+              WantedBy=multi-user.target
+          register: service_file
+
+        - name: Reload systemd daemon if service file changed
+          ansible.builtin.systemd:
+            daemon_reload: yes
+          when: service_file.changed
+
+        - name: Ensure service is started and enabled
+          ansible.builtin.systemd:
+            name: node_exporter
+            state: started
+            enabled: yes
+
+        - name: Open port 9100 in firewalld (RedHat only)
+          ansible.posix.firewalld:
+            port: 9100/tcp
+            permanent: yes
+            state: enabled
+            immediate: yes
+          when: ansible_facts['os_family'] == "RedHat"
+
+      when:
+        - ansible_facts['os_family'] in ["Debian", "RedHat"]
+        - "'node_exporter.service' not in ansible_facts['services'] or ansible_facts['services']['node_exporter.service']['state'] != 'running'"
+
+    - name: Get service status
+      ansible.builtin.systemd:
+        name: node_exporter
+      register: service_status
+
+    - name: Display the service status
+      ansible.builtin.debug:
+        msg: "Node Exporter status is: {{ service_status.status.ActiveState }}"
